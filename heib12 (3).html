@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>heib12 — محرك بحث عالمي</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1720;--card:#17212c;--fg:#eef3f8;--muted:#93a1b0;--primary:#3fd0e0;--border:#2a3644}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:Tajawal,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:28vh 20px 60px;transition:padding .3s}
+  .wrap.has{padding-top:32px}
+  h1{font-family:Syne,sans-serif;text-align:center;font-size:88px;margin:0;background:linear-gradient(90deg,#3fd0e0,#4fe39a);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .has h1{font-size:40px}
+  .tag{text-align:center;color:var(--muted)}
+  .has .tag{display:none}
+  form{margin-top:28px;display:flex;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:8px;box-shadow:0 0 40px -10px rgba(63,208,224,.45)}
+  input{flex:1;background:transparent;border:0;outline:0;color:var(--fg);font:inherit;font-size:18px;padding:0 16px}
+  button{background:var(--primary);color:var(--bg);border:0;border-radius:999px;padding:10px 24px;font:inherit;font-weight:700;cursor:pointer}
+  .meta{color:var(--muted);font-size:14px;margin:28px 0 20px}
+  ul{list-style:none;padding:0;margin:0}
+  li{margin-bottom:26px}
+  a{text-decoration:none;color:inherit}
+  .host{font-size:12px;color:var(--muted)}
+  .t{font-size:20px;color:var(--primary);margin:2px 0}
+  a:hover .t{text-decoration:underline}
+  .s{font-size:14px;line-height:1.7;opacity:.85;margin:0}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <h1 dir="ltr">heib12</h1>
+  <p class="tag">ابحث في الإنترنت بدقة وسرعة</p>
+  <form id="f"><input id="q" placeholder="اكتب ما تبحث عنه…" autofocus><button id="b">بحث</button></form>
+  <p class="meta" id="meta" hidden></p>
+  <ul id="list"></ul>
+</div>
+<script>
+  // عنوان الموقع المنشور الذي يقدم خدمة البحث
+  const API = "https://arabic-english-wiki-bridge.lovable.app/api/public/search";
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  $("f").onsubmit = async (e) => {
+    e.preventDefault();
+    const q = $("q").value.trim(); if (!q) return;
+    $("b").textContent = "…"; const t = performance.now();
+    try {
+      const r = await fetch(API + "?q=" + encodeURIComponent(q));
+      const data = await r.json();
+      if (!Array.isArray(data)) throw 0;
+      $("list").innerHTML = data.map((x) =>
+        `<li><a href="${esc(x.url)}" target="_blank" rel="noreferrer"><div class="host" dir="ltr">${esc(x.host)}</div><div class="t">${esc(x.title)}</div><p class="s">${esc(x.snippet)}</p></a></li>`).join("");
+      $("meta").textContent = data.length ? `${data.length} نتيجة خلال ${Math.round(performance.now() - t)} ملي ثانية` : "لا توجد نتائج، جرّب كلمات أخرى.";
+    } catch { $("list").innerHTML = ""; $("meta").textContent = "تعذر البحث الآن، حاول مرة أخرى."; }
+    $("meta").hidden = false; $("wrap").classList.add("has"); $("b").textContent = "بحث";
+  };
+</script>
+</body>
+</html>
